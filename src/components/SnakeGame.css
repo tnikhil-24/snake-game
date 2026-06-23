@@ -1,0 +1,97 @@
+.snake-game {
+  display: flex;
+  justify-content: center;
+}
+
+.snake-game__window {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+}
+
+.snake-game__titlebar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 32px;
+  padding: 0 10px;
+  background: var(--bg-titlebar);
+  border-bottom: 1px solid var(--border);
+}
+
+.snake-game__dots {
+  display: flex;
+  gap: 6px;
+  flex: none;
+}
+
+.snake-game__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: block;
+}
+
+.snake-game__dot--red {
+  background: #bf616a;
+}
+
+.snake-game__dot--yellow {
+  background: #ebcb8b;
+}
+
+.snake-game__dot--green {
+  background: #a3be8c;
+}
+
+.snake-game__path {
+  font-size: 12px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.snake-game__hud {
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.snake-game__board {
+  position: relative;
+  background: var(--bg);
+}
+
+.snake-game__board canvas {
+  display: block;
+}
+
+.snake-game__overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: rgba(46, 52, 64, 0.88);
+  text-align: center;
+}
+
+.snake-game__overlay h1 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-bright);
+  margin: 0 0 4px;
+}
+
+.snake-game__overlay--crash h1 {
+  color: #bf616a;
+}
+
+.snake-game__overlay p {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin: 0;
+}
