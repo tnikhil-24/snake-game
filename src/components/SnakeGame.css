@@ -95,3 +95,12 @@
   color: var(--text-muted);
   margin: 0;
 }
+
+.snake-game__titlebar--panic {
+  animation: panic-flash 0.2s infinite alternate;
+}
+
+@keyframes panic-flash {
+  from { background-color: #3b1a1a; }
+  to   { background-color: #5c2020; }
+}

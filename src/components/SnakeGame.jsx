@@ -45,6 +45,9 @@ export default function SnakeGame() {
   const [score, setScore] = useState(0)
   const [highScore, setHighScore] = useState(readHighScore)
   const [pid, setPid] = useState(generatePid)
+  const [logMessage, setLogMessage] = useState(null)
+  const [isPanic, setIsPanic] = useState(false)
+  const logTimerRef = useRef(null)
 
   useEffect(() => {
     phaseRef.current = phase
@@ -57,8 +60,16 @@ export default function SnakeGame() {
     }
   }
 
+  const EFFECT_MESSAGES = {
+    '3xx': '[INFO] 302 Found → redirecting...',
+    '4xx': '[WARN] 400 Bad Request → reversing...',
+    '5xx': '[ERROR] 500 Internal → panic!',
+  }
+
   function scheduleTick() {
-    const delay = tickIntervalForScore(gameStateRef.current.score)
+    const state = gameStateRef.current
+    const baseDelay = tickIntervalForScore(state.score)
+    const delay = state.panicTicksLeft > 0 ? Math.floor(baseDelay / 2) : baseDelay
     tickTimeoutRef.current = setTimeout(() => {
       const current = gameStateRef.current
       const direction = nextDirection(current.direction, queuedDirectionRef.current)
@@ -68,6 +79,7 @@ export default function SnakeGame() {
 
       if (result.gameOver) {
         setPhase('gameover')
+        setIsPanic(false)
         setHighScore((prev) => {
           if (result.score <= prev) return prev
           localStorage.setItem(HIGH_SCORE_KEY, String(result.score))
@@ -76,6 +88,13 @@ export default function SnakeGame() {
         return
       }
 
+      if (result.lastEffect) {
+        setLogMessage(EFFECT_MESSAGES[result.lastEffect])
+        if (logTimerRef.current) clearTimeout(logTimerRef.current)
+        logTimerRef.current = setTimeout(() => setLogMessage(null), 2000)
+      }
+
+      setIsPanic(result.panicTicksLeft > 0)
       setScore(result.score)
       scheduleTick()
     }, delay)
@@ -83,9 +102,12 @@ export default function SnakeGame() {
 
   function startGame() {
     clearTick()
+    if (logTimerRef.current) clearTimeout(logTimerRef.current)
     gameStateRef.current = createInitialState()
     queuedDirectionRef.current = null
     setScore(0)
+    setLogMessage(null)
+    setIsPanic(false)
     setPid(generatePid())
     setPhase('playing')
     scheduleTick()
@@ -101,7 +123,10 @@ export default function SnakeGame() {
     scheduleTick()
   }
 
-  useEffect(() => clearTick, [])
+  useEffect(() => () => {
+    clearTick()
+    if (logTimerRef.current) clearTimeout(logTimerRef.current)
+  }, [])
 
   actionsRef.current = { startGame, pauseGame, resumeGame }
 
@@ -176,13 +201,15 @@ export default function SnakeGame() {
   return (
     <div className="snake-game">
       <div className="snake-game__window" style={{ width: CANVAS_WIDTH }}>
-        <div className="snake-game__titlebar">
+        <div className={`snake-game__titlebar${isPanic ? ' snake-game__titlebar--panic' : ''}`}>
           <div className="snake-game__dots">
             <span className="snake-game__dot snake-game__dot--red" />
             <span className="snake-game__dot snake-game__dot--yellow" />
             <span className="snake-game__dot snake-game__dot--green" />
           </div>
-          <span className="snake-game__path">~/proc/snake.connection</span>
+          <span className="snake-game__path">
+            {logMessage ?? '~/proc/snake.connection'}
+          </span>
           <span className="snake-game__hud">
             PID {pid} &middot; score {score} &middot; best {highScore}
           </span>
